@@ -1,12 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
-@Time ： 2020/8/14 15:46
-@Auth ： Yu Xiong
-@File ：plot_helper.py
-@IDE ：PyCharm
-@Motto：ABC(Always Be Coding)
 
-"""
 
 import shap
 import numpy as np

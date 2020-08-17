@@ -1,12 +1,6 @@
 # -*- coding: utf-8 -*-
-"""
-@Time ： 2020/7/31 16:36
-@Auth ： Yu Xiong
-@File ：model_explain.py
-@IDE ：PyCharm
-@Motto：ABC(Always Be Coding)
 
-"""
+
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
