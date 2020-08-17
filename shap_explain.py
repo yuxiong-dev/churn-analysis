@@ -59,6 +59,7 @@ def model_explain(churn_path, retain_path):
     group_plot(explainer.expected_value, shap_values_filtered, data_filtered, save_path='group/')
 
 
-
+if __name__ == '__main__':
+    model_explain(churn_path='data/churn.csv', retain_path='data/retain.csv')
 
 
