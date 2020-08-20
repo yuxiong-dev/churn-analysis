@@ -7,6 +7,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, precision_score, recall_score, roc_auc_score
 import xgboost as xgb
 import shap
+import time
 from plot_helper import data_anomal_filter, data_extremum, dependence_plot, force_plot, group_plot
 
 
@@ -23,7 +24,7 @@ def model_explain(churn_path, retain_path):
         'booster': 'gbtree',
         'objective': 'binary:logistic',
         'eval_metric': 'logloss',
-        'max_depth': 7,
+        'max_depth': 6,
         'lambda': 1,
         'subsample': 0.75,
         'colsample_bytree': 0.75,
@@ -45,7 +46,10 @@ def model_explain(churn_path, retain_path):
     print('The recall of prediction is {}'.format(recall_score(test_label, preds_y)))
 
     explainer = shap.TreeExplainer(model)
+    start = time.clock()
     shap_values = explainer.shap_values(all_data)
+    end = time.clock()
+    print('times:', end - start)
 
     data_filtered, shap_values_filtered = data_anomal_filter(all_data, shap_values, 99.95)
 

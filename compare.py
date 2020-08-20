@@ -124,7 +124,7 @@ def model_training(model_type='lr'):
             'booster': 'gbtree',
             'objective': 'binary:logistic',
             'eval_metric': 'logloss',
-            'max_depth': 7,
+            'max_depth': 6,
             'lambda': 1,
             'subsample': 0.75,
             'colsample_bytree': 0.75,
