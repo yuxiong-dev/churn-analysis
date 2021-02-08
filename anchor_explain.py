@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 import pathos
 import sklearn
+import joblib
 import xgboost as xgb
 from anchor import anchor_tabular
 
@@ -26,11 +27,7 @@ def data_processing(df):
 
 
 def model_load(path):
-    model = xgb.XGBClassifier()
-    booster = xgb.Booster()
-    booster.load_model(path)
-    model._Booster = booster
-    model._le = sklearn.preprocessing.LabelEncoder().fit([0, 1])
+    model = joblib.load(path)
     return model
 
 
@@ -219,7 +216,7 @@ def parse_learner(learner, explanations, default_pred, path):
 if __name__ == '__main__':
     # 数据路径
     data_path = 'data/dataset.csv'
-    model_path = 'data/xgb.model'
+    model_path = 'data/lgb.model'
     parse_path = 'data/feature.txt'
     # 获取数据集
     data = data_load(data_path)

@@ -181,7 +181,7 @@ def feature_selection(model_type):
     all_data[all_data_inf] = 0
     all_label = np.append(np.ones(churn_df.shape[0]), np.zeros(retain_df.shape[0]))
     if model_type == 'lr':
-        with open('model/lr_auc0.9002.pickle', 'rb') as f:
+        with open('model/lr.pickle', 'rb') as f:
             model = pickle.load(f)
         weight = np.abs(model.coef_[0])
         col_list = np.array(all_data.columns)
@@ -190,7 +190,7 @@ def feature_selection(model_type):
         print(col_rank[:5])
 
     if model_type == 'tree':
-        with open('model/tree_auc0.7982.pickle', 'rb') as f:
+        with open('model/tree.pickle', 'rb') as f:
             model = pickle.load(f)
         feat_importance = model.tree_.compute_feature_importances(normalize=False)
         # print('feat importance = ' + str(feat_importance))
@@ -299,7 +299,7 @@ def feature_selection(model_type):
         col_rank = col_list[p]
         print(col_rank[:5])
     if model_type == 'xgb':
-        model = xgb.Booster(model_file='model/xgb_auc0.9557.model')
+        model = xgb.Booster(model_file='model/xgb.model')
         data = xgb.DMatrix(all_data)
         preds = model.predict(data)
         feat_imp = model.get_score(importance_type='total_gain')
@@ -314,7 +314,7 @@ def feature_selection(model_type):
 
 
     if model_type == 'xgb_shap':
-        model = xgb.Booster(model_file='model/xgb_auc0.9557.model')
+        model = xgb.Booster(model_file='model/xgb.model')
         data = xgb.DMatrix(all_data)
         preds = model.predict(data)
         shap.initjs()
@@ -333,25 +333,24 @@ def feature_selection(model_type):
         all_data_tmp = all_data[col_list_tmp]
         train_data, test_data, train_label, test_label = train_test_split(all_data_tmp, all_label, test_size=0.2,
                                                                           random_state=42)
-        dtrain = xgb.DMatrix(train_data, label=train_label)
-        dtest = xgb.DMatrix(test_data, label=test_label)
+        lgb_train = lgb.Dataset(train_data, train_label)
+        lgb_test = lgb.Dataset(test_data, test_label, reference=lgb_train)
         params = {
-            'booster': 'gbtree',
-            'objective': 'binary:logistic',
-            'eval_metric': 'logloss',
-            'max_depth': 7,
-            'lambda': 1,
-            'subsample': 0.75,
-            'colsample_bytree': 0.75,
-            'min_child_weight': 2,
-            'eta': 0.025,
-            'seed': 0,
-            'nthread': 8,
-            'silent': 1
+            'task': 'train',
+            'boosting_type': 'gbdt',
+            'objective': 'binary',
+            'metric': {'binary_logloss', 'auc'},
+            'num_leaves': 31,
+            'min_data_in_leaf': 20,
+            'max_depth': 6,
+            'learning_rate': 0.05,
+            'feature_fraction': 0.9,
+            'bagging_fraction': 0.8,
+            'bagging_freq': 5,
+            'verbose': 0
         }
-        watchlist = [(dtest, 'validation')]
-        model = xgb.train(params, dtrain, num_boost_round=1000, early_stopping_rounds=30, evals=watchlist)
-        predictions = model.predict(dtest)
+        model = lgb.train(params, lgb_train, num_boost_round=1000, valid_sets=lgb_test, early_stopping_rounds=20)
+        predictions = model.predict(test_data, num_iteration=model.best_iteration)
         auc = roc_auc_score(test_label, predictions)
         print(x, ' features')
         print('The roc of prediction is {}'.format(auc))
