@@ -298,10 +298,9 @@ def feature_selection(model_type):
         p = np.argsort(-np.array(feature_importance))
         col_rank = col_list[p]
         print(col_rank[:5])
-    if model_type == 'xgb':
-        model = xgb.Booster(model_file='model/xgb.model')
-        data = xgb.DMatrix(all_data)
-        preds = model.predict(data)
+    if model_type == 'lgb':
+        model = lgb.Booster(model_file='model/lgb.model')
+        preds = model.predict(all_data)
         feat_imp = model.get_score(importance_type='total_gain')
         col_rank = []
         col_imp = []
@@ -313,13 +312,13 @@ def feature_selection(model_type):
         print(col_imp)
 
 
-    if model_type == 'xgb_shap':
-        model = xgb.Booster(model_file='model/xgb.model')
-        data = xgb.DMatrix(all_data)
-        preds = model.predict(data)
+    if model_type == 'lgb_shap':
+        model = lgb.Booster(model_file='model/lgb.model')
+        bg_data = all_data.sample(n=200, random_state=42)
+        preds = model.predict(all_data)
         shap.initjs()
-        explainer = shap.TreeExplainer(model)
-        shap_values = explainer.shap_values(data)
+        explainer = shap.TreeExplainer(model, data=bg_data)
+        shap_values = explainer.shap_values(all_data)
         shap_values = np.sum(np.abs(shap_values), axis=0)
         col_list = np.array(all_data.columns)
         p = np.argsort(-shap_values)
@@ -364,7 +363,7 @@ def feature_selection(model_type):
 
 if __name__ == '__main__':
     model_training(model_type='tree')
-    # feature_selection(model_type='xgb')
+    # feature_selection(model_type='lgb')
 
 
 
